@@ -51,6 +51,8 @@ public class App {
         }
         executorService = Executors.newFixedThreadPool(threads);
 
+        long start = System.currentTimeMillis();
+
         HikariConfig hikariConfig = new HikariConfig();
         hikariConfig.setJdbcUrl(dbUrl);
         hikariConfig.setUsername(dbUser);
@@ -103,7 +105,6 @@ public class App {
         System.out.println("width = " + width);
         System.out.println("height = " + height);
 
-
         BlockingDeque<MapTile> queue = new LinkedBlockingDeque<>();
         int step = (int) Math.pow(2, zoom);
 
@@ -153,6 +154,9 @@ public class App {
             System.err.println("error writing result");
         }
 
+        long end = System.currentTimeMillis();
+
+        System.out.println(String.format("finished in %.2f seconds", (end - start) / (double) 1000));
         System.out.println("output to " + container.getName());
 
         executorService.shutdown();
