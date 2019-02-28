@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -23,32 +24,52 @@ public class App {
 
     private static volatile int processed = 0;
 
-    public static void main(String[] args) throws SQLException {
-        OptionSet optionSet = new OptionParser() {
-            {
-                accepts("db-url", "like jdbc:mysql://localhost/mc").withRequiredArg().ofType(String.class);
-                accepts("db-user").withRequiredArg().ofType(String.class);
-                accepts("db-password").withRequiredArg().ofType(String.class);
-                accepts("table-prefix", "such as \"dynmap_build_\"").withRequiredArg().ofType(String.class);
-                accepts("world", "world name").withRequiredArg().ofType(String.class);
-                accepts("map-id", "often \"flat\"").withRequiredArg().ofType(String.class);
-                accepts("zoom", "zoom, should be integer, starting from 0").withRequiredArg().ofType(Integer.class);
-                accepts("threads", "working threads, should be integer, default to 10, must > 0").withRequiredArg().ofType(Integer.class).defaultsTo(10);
-            }
-        }.parse(args);
+    public static void main(String[] args) throws SQLException, IOException {
+        OptionSpec<String> specDBUrl, specDBUser, specDBPassword, specTablePrefix, specWorld, specMapId;
+        OptionSpec<Integer> specZoom, specThreads;
 
-        String dbUrl = (String) optionSet.valueOf("db-url");
-        String dbUser = (String) optionSet.valueOf("db-user");
-        String dbPassword = (String) optionSet.valueOf("db-password");
-        String tablePrefix = (String) optionSet.valueOf("table-prefix");
-        String world = (String) optionSet.valueOf("world");
-        String mapId = (String) optionSet.valueOf("map-id");
-        int zoom = (int) optionSet.valueOf("zoom");
-        int threads = (int) optionSet.valueOf("threads");
+        OptionParser optionParser = new OptionParser();
+
+        specDBUrl = optionParser.accepts("db-url", "like jdbc:mysql://localhost/mc").withRequiredArg().ofType(String.class);
+        specDBUser = optionParser.accepts("db-user").withRequiredArg().ofType(String.class);
+        specDBPassword = optionParser.accepts("db-password").withRequiredArg().ofType(String.class);
+        specTablePrefix = optionParser.accepts("table-prefix", "such as \"dynmap_build_\"").withRequiredArg().ofType(String.class);
+        specWorld = optionParser.accepts("world", "world name").withRequiredArg().ofType(String.class);
+        specMapId = optionParser.accepts("map-id", "usually was \"flat\"").withRequiredArg().ofType(String.class);
+        specZoom = optionParser.accepts("zoom", "zoom, should be integer, starting from 0").withRequiredArg().ofType(Integer.class);
+        specThreads = optionParser.accepts("threads", "working threads, should be integer, default to 10, must > 0").withRequiredArg().ofType(Integer.class).defaultsTo(10);
+
+        OptionSet optionSet;
+        try {
+            optionSet = optionParser.parse(args);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.exit(-1);
+            return;
+        }
+
+        if (!optionSet.has(specDBUrl) || !optionSet.has(specDBUser)
+                || !optionSet.has(specDBPassword) || !optionSet.has(specTablePrefix)
+                || !optionSet.has(specWorld) || !optionSet.has(specMapId)
+                || !optionSet.has(specZoom)) {
+            optionParser.printHelpOn(System.err);
+            System.exit(-1);
+            return;
+        }
+
+        String dbUrl = specDBUrl.value(optionSet);
+        String dbUser = specDBUser.value(optionSet);
+        String dbPassword = specDBPassword.value(optionSet);
+        String tablePrefix = specTablePrefix.value(optionSet);
+        String world = specWorld.value(optionSet);
+        String mapId = specMapId.value(optionSet);
+        int zoom = specZoom.value(optionSet);
+        int threads = specThreads.value(optionSet);
         if (threads <= 0) {
             System.err.println("threads must > 0");
             return;
         }
+
         executorService = Executors.newFixedThreadPool(threads);
 
         long start = System.currentTimeMillis();
