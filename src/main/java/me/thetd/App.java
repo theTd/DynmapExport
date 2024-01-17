@@ -30,14 +30,14 @@ public class App {
 
         OptionParser optionParser = new OptionParser();
 
-        specDBUrl = optionParser.accepts("db-url", "like jdbc:mysql://localhost/mc").withRequiredArg().ofType(String.class);
+        specDBUrl = optionParser.accepts("db-url", "eg jdbc:mysql://localhost/mc").withRequiredArg().ofType(String.class);
         specDBUser = optionParser.accepts("db-user").withRequiredArg().ofType(String.class);
         specDBPassword = optionParser.accepts("db-password").withRequiredArg().ofType(String.class);
-        specTablePrefix = optionParser.accepts("table-prefix", "such as \"dynmap_build_\"").withRequiredArg().ofType(String.class);
+        specTablePrefix = optionParser.accepts("table-prefix", "eg \"dynmap_build_\"").withRequiredArg().ofType(String.class);
         specWorld = optionParser.accepts("world", "world name").withRequiredArg().ofType(String.class);
-        specMapId = optionParser.accepts("map-id", "usually was \"flat\"").withRequiredArg().ofType(String.class);
-        specZoom = optionParser.accepts("zoom", "zoom, should be integer, starting from 0").withRequiredArg().ofType(Integer.class);
-        specThreads = optionParser.accepts("threads", "working threads, should be integer, default to 10, must > 0").withRequiredArg().ofType(Integer.class).defaultsTo(10);
+        specMapId = optionParser.accepts("map-id", "eg \"flat\"").withRequiredArg().ofType(String.class);
+        specZoom = optionParser.accepts("zoom").withRequiredArg().ofType(Integer.class);
+        specThreads = optionParser.accepts("threads", "working threads, defaults to 10").withRequiredArg().ofType(Integer.class).defaultsTo(10);
 
         OptionSet optionSet;
         try {
